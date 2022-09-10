@@ -1,37 +1,67 @@
 <template>
-<div id="app">
-  <stock />
-</div>
+  <router-view />
 </template>
 
 <script>
-import login from './components/login.vue'
-import navi from './components/navigator.vue'
-import kline from './components/kline.vue'
-import stock from './components/stock.vue'
 
 export default {
   name: 'App',
   components: {
-    login,
-    navi,
-    kline,
-    stock,
-  }
+   
+}
 }
 </script>
 
 <style>
-body, html{
+body,
+html {
   margin: 0;
   padding: 0;
-  height: 100%;
-  width: 100%;
 }
+
+html {
+  overflow-y: scroll;
+}
+
+:root {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+:root body {
+  position: absolute;
+}
+
+body {
+  width: 100vw;
+  overflow: hidden;
+}
+
 #app {
   margin: 0;
   padding: 0;
-  background-color: #f8f8f8;
+  background-color: #fff;
   height: 100%;
+  font-family: Consolas, Menlo, Monaco, 'Courier New', 'PingFang SC',
+    'Microsoft YaHei', monospace;
 }
+
+.flex {
+  display: flex;
+}
+
+.flex1 {
+  flex: 1;
+}
+
+.flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flexColumn{
+  flex-direction: column;
+}
+
 </style>

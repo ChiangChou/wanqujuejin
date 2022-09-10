@@ -1,7 +1,7 @@
 <template>
-    <div class="stock-item">
+    <div class="stock-item" @click="itemChange">
         <div class="nameinfo">
-            <p style="color: #f5f5f5">{{ stockinfo.id }}</p>
+            <p style="color: #2c2c2c">{{ stockinfo.id }}</p>
             <p>{{ stockinfo.name }}</p>
         </div>
         <div class="index">{{ stockinfo.index }}</div>
@@ -16,7 +16,7 @@ export default {
     computed: {
         risefallcolor() {
             return {
-                'color': this.stockinfo.rate < 0 ? 'green' : 'red'
+                'color': this.stockinfo.rate < 0 ? '#6db' : 'red'
             }
         },
         toindex() {
@@ -24,10 +24,12 @@ export default {
             if (this.stockinfo.rate >= 0)
                 a = '+'.concat(a);
             return a;
-        }
+        },
     },
     methods: {
-
+        itemChange() {
+            this.$emit("itemChange", this.stockinfo.id);
+        },
     },
     data() {
         return {
@@ -41,10 +43,15 @@ export default {
 <style scoped>
 .stock-item {
     display: flex;
-    margin: 15px 15px;
+    padding: 10px 15px;
     font-size: 14px;
-    color: #f5f5f5;
+    color: #2c2c2c;
     align-items: center;
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.stock-item:hover {
+    background-color: #f0f0f0;
 }
 
 .nameinfo {
@@ -54,7 +61,7 @@ export default {
 .stock-item p {
     margin: 0;
     padding: 0;
-    color: #a0a0a0;
+    color: #2c2c2c;
 }
 
 .rate {

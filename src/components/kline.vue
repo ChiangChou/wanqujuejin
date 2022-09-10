@@ -1,130 +1,136 @@
 <template>
-  <div>
-    <div id="echartContainer" ref="echartContainer" style="width:100%; height:300px"></div>
+  <div class="echartComponent">
+    <div id="echartContainer" ref="echartContainer"></div>
+    <div class="options">
+      <button @click="DayK" :style="this.clickcolor[this.dayWeekMonthChosen[0]]">日</button>
+      <button @click="WeekK" :style="this.clickcolor[this.dayWeekMonthChosen[1]]">周</button>
+      <button @click="monthK" :style="this.clickcolor[this.dayWeekMonthChosen[2]]">月</button>
+      <button @click="MA(5, $event)" style="color:#2c2c2c; font-weight:600;" class="ma">MA5</button>
+      <button @click="MA(10, $event)" style="color:#2c2c2c; font-weight:600;" class="ma">MA10</button>
+      <button @click="MA(20, $event)" style="color:#2c2c2c; font-weight:600;" class="ma">MA20</button>
+      <button @click="MA(30, $event)" style="color:#2c2c2c; font-weight:600;" class="ma">MA30</button>
+    </div>
   </div>
-  <button style="width:100px; height:50px" @click="monthK"></button>
+
 </template>
 
 <script>
 var echarts = require("echarts");
 export default {
+  props: ["newsinfo", "stockinfo"],
   data() {
     return {
-      //数据模型 time0 open1 close2 min3 max4 vol5 tag6 macd7 dif8 dea9
+      clickcolor: [{ 'color': '#8c8c8c', 'font-weight': 400 }, { 'color': '#2c2c2c', 'font-weight': 600 },],
+      dayWeekMonthChosen: [1, 0, 0],
+      isDataInit: false,
+      //数据模型 time0 open1 close2 min3 max4 vol5 tag6 macd7 dif8 dea9, volume10
       //['2022010-18',18.56,18.25,18.19,18.56,55.00,0,-0.00,0.08,0.09]
-      data: [
-        [20220316, 18.4, 18.58, 18.33, 18.79, 67.0, 1, 0.04, 0.11, 0.09],
-        [20220319, 18.56, 18.25, 18.19, 18.56, 55.0, 0, -0.0, 0.08, 0.09],
-        [20220320, 18.3, 18.22, 18.05, 18.41, 37.0, 0, 0.01, 0.09, 0.09],
-        [20220321, 18.18, 18.69, 18.02, 18.98, 89.0, 0, 0.03, 0.1, 0.08],
-        [20220322, 18.42, 18.29, 18.22, 18.48, 43.0, 0, -0.06, 0.05, 0.08],
-        [20220323, 18.26, 18.19, 18.08, 18.36, 46.0, 0, -0.1, 0.03, 0.09],
-        [20220326, 18.33, 18.07, 17.98, 18.35, 65.0, 0, -0.15, 0.03, 0.1],
-        [20220327, 18.08, 18.04, 17.88, 18.13, 37.0, 0, -0.19, 0.03, 0.12],
-        [20220328, 17.96, 17.86, 17.82, 17.99, 35.0, 0, -0.24, 0.03, 0.15],
-        [20220329, 17.85, 17.81, 17.8, 17.93, 27.0, 0, -0.24, 0.06, 0.18],
-        [20220330, 17.79, 17.93, 17.78, 18.08, 43.0, 0, -0.22, 0.11, 0.22],
-        [20220402, 17.78, 17.83, 17.78, 18.04, 27.0, 0, -0.2, 0.15, 0.25],
-        [20220403, 17.84, 17.9, 17.84, 18.06, 34.0, 0, -0.12, 0.22, 0.28],
-        [20220404, 17.97, 18.36, 17.85, 18.39, 62.0, 0, -0.0, 0.3, 0.3],
-        [20220405, 18.3, 18.57, 18.18, 19.08, 177.0, 0, 0.07, 0.33, 0.3],
-        [20220406, 18.53, 18.68, 18.3, 18.71, 95.0, 0, 0.12, 0.35, 0.29],
-        [20220409, 18.75, 19.08, 18.75, 19.98, 202.0, 1, 0.16, 0.35, 0.27],
-        [20220410, 18.85, 18.64, 18.56, 18.99, 85.0, 0, 0.09, 0.29, 0.25],
-        [20220411, 18.64, 18.44, 18.31, 18.64, 50.0, 0, 0.06, 0.27, 0.23],
-        [20220412, 18.55, 18.27, 18.17, 18.57, 43.0, 0, 0.05, 0.25, 0.23],
-        [20220413, 18.13, 18.14, 18.09, 18.34, 35.0, 0, 0.05, 0.24, 0.22],
-        [20220416, 18.01, 18.1, 17.93, 18.17, 34.0, 0, 0.07, 0.25, 0.21],
-        [20220417, 18.2, 18.14, 18.08, 18.45, 58.0, 0, 0.11, 0.25, 0.2],
-        [20220418, 18.23, 18.16, 18.0, 18.45, 47.0, 0, 0.13, 0.25, 0.19],
-        [20220419, 18.08, 18.2, 18.05, 18.25, 32.0, 0, 0.15, 0.24, 0.17],
-        [20220420, 18.15, 18.15, 18.11, 18.29, 36.0, 0, 0.13, 0.21, 0.15],
-        [20220423, 18.16, 18.19, 18.12, 18.34, 47.0, 0, 0.11, 0.18, 0.13],
-        [20220424, 18.23, 17.88, 17.7, 18.23, 62.0, 0, 0.03, 0.13, 0.11],
-        [20220425, 17.85, 17.73, 17.56, 17.85, 66.0, 0, -0.03, 0.09, 0.11],
-        [20220426, 17.79, 17.53, 17.5, 17.92, 63.0, 0, -0.1, 0.06, 0.11],
-        [20220427, 17.51, 17.04, 16.9, 17.51, 67.0, 0, -0.16, 0.05, 0.13],
-        [20220430, 17.07, 17.2, 16.98, 17.32, 55.0, 0, -0.12, 0.09, 0.15],
-        [20220501, 17.28, 17.11, 16.91, 17.28, 39.0, 0, -0.09, 0.12, 0.16],
-        [20220502, 17.13, 17.91, 17.05, 17.99, 102.0, 0, -0.01, 0.17, 0.18],
-        [20220503, 17.8, 17.78, 17.61, 17.98, 71.0, 0, -0.09, 0.14, 0.18],
-        [20220504, 17.6, 17.25, 17.13, 17.69, 51.0, 0, -0.18, 0.1, 0.19],
-        [20220507, 17.2, 17.39, 17.15, 17.45, 43.0, 0, -0.19, 0.12, 0.22],
-        [20220508, 17.3, 17.42, 17.18, 17.62, 45.0, 0, -0.23, 0.13, 0.24],
-        [20220509, 17.33, 17.39, 17.32, 17.59, 44.0, 0, -0.29, 0.13, 0.28],
-        [20220510, 17.39, 17.26, 17.21, 17.65, 44.0, 0, -0.37, 0.13, 0.32],
-        [20220511, 17.23, 16.92, 16.66, 17.26, 114.0, 1, -0.44, 0.15, 0.37],
-        [20220514, 16.75, 17.06, 16.5, 17.09, 94.0, 0, -0.44, 0.21, 0.44],
-        [20220515, 17.03, 17.03, 16.9, 17.06, 46.0, 0, -0.44, 0.28, 0.5],
-        [20220516, 17.08, 16.96, 16.87, 17.09, 30.0, 0, -0.4, 0.36, 0.56],
-        [20220517, 17.0, 17.1, 16.95, 17.12, 50.0, 0, -0.3, 0.47, 0.62],
-        [20220518, 17.09, 17.52, 17.04, 18.06, 156.0, 0, -0.14, 0.59, 0.66],
-        [20220521, 17.43, 18.23, 17.35, 18.45, 152.0, 1, 0.02, 0.69, 0.68],
-        [20220522, 18.14, 18.27, 18.06, 18.32, 94.0, 0, 0.08, 0.72, 0.68],
-        [20220523, 18.28, 18.19, 18.17, 18.71, 108.0, 0, 0.13, 0.73, 0.67],
-        [20220524, 18.18, 18.14, 18.01, 18.31, 37.0, 0, 0.19, 0.74, 0.65],
-        [20220525, 18.22, 18.33, 18.2, 18.36, 48.0, 0, 0.26, 0.75, 0.62],
-        [20220528, 18.35, 17.84, 17.8, 18.39, 48.0, 0, 0.27, 0.72, 0.59],
-        [20220529, 17.83, 17.94, 17.71, 17.97, 36.0, 0, 0.36, 0.73, 0.55],
-        [20220530, 17.9, 18.26, 17.55, 18.3, 71.0, 1, 0.43, 0.71, 0.5],
-        [20220531, 18.12, 17.99, 17.91, 18.33, 72.0, 0, 0.4, 0.63, 0.43],
-        [20220604, 17.91, 17.28, 17.16, 17.95, 37.0, 1, 0.34, 0.55, 0.38],
-        [20220605, 17.17, 17.23, 17.0, 17.55, 51.0, 0, 0.37, 0.51, 0.33],
-        [20220606, 17.2, 17.31, 17.06, 17.33, 31.0, 0, 0.37, 0.46, 0.28],
-        [20220607, 17.15, 16.67, 16.51, 17.15, 19.0, 0, 0.3, 0.37, 0.22],
-        [20220608, 16.8, 16.81, 16.61, 17.06, 60.0, 0, 0.29, 0.32, 0.18],
-        [20220611, 16.68, 16.04, 16.0, 16.68, 65.0, 0, 0.2, 0.24, 0.14],
-        [20220612, 16.03, 15.98, 15.88, 16.25, 46.0, 0, 0.2, 0.21, 0.11],
-        [20220613, 16.21, 15.87, 15.78, 16.21, 57.0, 0, 0.2, 0.18, 0.08],
-        [20220614, 15.55, 15.89, 15.52, 15.96, 42.0, 0, 0.2, 0.16, 0.05],
-        [20220615, 15.87, 15.48, 15.45, 15.92, 34.0, 1, 0.17, 0.11, 0.02],
-        [20220618, 15.39, 15.42, 15.36, 15.7, 26.0, 0, 0.21, 0.1, -0.0],
-        [20220619, 15.58, 15.71, 15.35, 15.77, 38.0, 0, 0.25, 0.09, -0.03],
-        [20220620, 15.56, 15.52, 15.24, 15.68, 38.0, 0, 0.23, 0.05, -0.07],
-        [20220621, 15.41, 15.3, 15.28, 15.68, 35.0, 0, 0.21, 0.0, -0.1],
-        [20220622, 15.48, 15.28, 15.13, 15.49, 30.0, 0, 0.21, -0.02, -0.13],
-        [20220625, 15.29, 15.48, 15.2, 15.49, 21.0, 0, 0.2, -0.06, -0.16],
-        [20220626, 15.33, 14.86, 14.78, 15.39, 30.0, 0, 0.12, -0.13, -0.19],
-        [20220627, 14.96, 15.0, 14.84, 15.22, 51.0, 0, 0.13, -0.14, -0.2],
-        [20220628, 14.96, 14.72, 14.62, 15.06, 25.0, 0, 0.1, -0.17, -0.22],
-        [20220629, 14.75, 14.99, 14.62, 15.08, 36.0, 0, 0.13, -0.17, -0.24],
-        [20220701, 14.98, 14.72, 14.48, 15.18, 27.0, 0, 0.1, -0.21, -0.26],
-        [20220702, 14.65, 14.85, 14.65, 14.95, 18.0, 0, 0.11, -0.21, -0.27],
-        [20220703, 14.72, 14.67, 14.55, 14.8, 23.0, 0, 0.1, -0.24, -0.29],
-        [20220704, 14.79, 14.88, 14.69, 14.93, 22.0, 0, 0.13, -0.24, -0.3],
-        [20220705, 14.9, 14.86, 14.78, 14.93, 16.0, 0, 0.12, -0.26, -0.32],
-        [20220715, 14.5, 14.66, 14.47, 14.82, 19.0, 0, 0.11, -0.28, -0.34],
-        [20220716, 14.77, 14.94, 14.72, 15.05, 26.0, 0, 0.14, -0.28, -0.35],
-        [20220717, 14.95, 15.03, 14.88, 15.07, 38.0, 0, 0.12, -0.31, -0.37],
-        [20220718, 14.95, 14.9, 14.87, 15.06, 28.0, 0, 0.07, -0.35, -0.39],
-        [20220719, 14.9, 14.75, 14.68, 14.94, 22.0, 0, 0.03, -0.38, -0.4],
-        [20220722, 14.88, 15.01, 14.79, 15.11, 38.0, 1, 0.01, -0.4, -0.4],
-        [20220723, 15.01, 14.83, 14.72, 15.01, 24.0, 0, -0.09, -0.45, -0.4]
-      ],
+      data: [],
       // k线配置项
       option: {},
+      markPoint: { data: [] },
     };
   },
   mounted() {
-    // 这里实现的是一个比较简单的，可以按照需求将函数移动到methods函数中
-    let temp = this.arrayCopy(this.data);
-    this.numToDate(temp);
-    this.data0 = this.splitData(temp);
-    this.setOption(this.data0);
-    // 进行初始化
-    this.charts = echarts.init(this.$refs.echartContainer);
-    this.charts.setOption(this.option);
+    this.chart_write();
+  },
+  watch: {
+    stockinfo: {
+      handler: function (newvalue, oldvalue) {
+        console.log(newvalue)
+        this.chart_write();
+      },
+    }
   },
   methods: {
+    chart_write() {
+      //this.formatDate(this.stockinfo)
+      this.initData(this.stockinfo);
+      //.log(this.data)
+      // 这里实现的是一个比较简单的，可以按照需求将函数移动到methods函数中
+      let temp = this.arrayCopy(this.data);
+      this.numArrayToDate(temp);
+      this.data0 = this.splitData(temp);
+      this.addMarkPoint();
+      this.setOption(this.data0);
+      // 进行初始化
+      this.charts = echarts.init(this.$refs.echartContainer);
+      this.charts.setOption(this.option);
+    },
+    addMarkPoint() {
+      let temparr = this.arrayCopy(this.data);
+      const map1 = new Map();
+      for (let i = 0; i < temparr.length; i++) {
+        map1.set(temparr[i][0], i);
+      }
+      let stasticarr = temparr.map(item => {
+        return { p: 0, n: 0 };
+      });
+
+      let maxDate = temparr[temparr.length - 1][0];
+      for (let i of this.newsinfo) {
+        let num = i.time.substring(0, 4) * 10000 + i.time.substring(5, 7)*100 + i.time.substring(8, 10)*1;
+        while (1) {
+          let judge = map1.get(num);
+          if (judge) {
+            if (i.forecast > 0) stasticarr[judge].p += 1;
+            else stasticarr[judge].n += 1;
+            break;
+          }
+          //如果找不到就继续找往后的日期
+          else num++;
+          if (num > maxDate) break;
+        }
+      }
+      let a = { data: [] }
+      for (let i = 0; i < stasticarr.length; i++) {
+        if (stasticarr[i].p > 0) {
+          a.data.push({
+            coord: [i, temparr[i][4]],
+            symbol: "pin",
+            symbolSize: 12,
+            value: stasticarr[i].p,
+            animation: true,
+            label: {
+              show: true,
+              color: '#c23531',
+              fontSize: 12,
+              offset: [0, -12],
+            },
+            itemStyle: { color: '#c23531' }
+          })
+        }
+        if (stasticarr[i].n > 0) {
+          a.data.push({
+            coord: [i, temparr[i][3]],
+            symbol: "pin",
+            symbolSize: 12,
+            symbolRotate: 180,
+            value: stasticarr[i].n,
+            animation: true,
+            label: {
+              show: true,
+              color: '#6db',
+              fontSize: 12,
+              offset: [0, 15],
+            },
+            itemStyle: { color: '#6db' }
+          })
+        }
+      }
+      this.markPoint = a;
+    },
     splitData(rawData) {
       var categoryData = [];
       var values = [];
+      var volume = [];
       //var macds = [];
       //var difs = [];
       //var deas = [];
       for (var i = 0; i < rawData.length; i++) {
         categoryData.push(rawData[i].splice(0, 1)[0]);
         values.push(rawData[i]);
+        volume.push(rawData[i][4]);
         //macds.push(rawData[i][6]);
         //difs.push(rawData[i][7]);
         //deas.push(rawData[i][8]);
@@ -132,10 +138,25 @@ export default {
       return {
         categoryData: categoryData,
         values: values,
+        volume: volume,
         //macds: macds,
         //difs: difs,
         //deas: deas
       };
+    },
+    MA(x, e) {
+      e.target.style.color = e.target.style.color === '#2c2c2c' ? '#8c8c8c' : '#2c2c2c';
+      e.target.style.fontWeight = e.target.style.fontWeight === '400' ? '600' : '400';
+      let i;
+      switch (x) {
+        case 5: i = 1; break;
+        case 10: i = 2; break;
+        case 20: i = 3; break;
+        case 30: i = 4; break;
+      }
+      let a = this.option.series[i].lineStyle.normal.opacity;
+      this.option.series[i].lineStyle.normal.opacity = a === 0 ? 0.5 : 0;
+      this.charts.setOption(this.option, true);
     },
     // ma均线函数
     calculateMA(dayCount) {
@@ -160,21 +181,32 @@ export default {
           axisPointer: {
             type: "cross",
             lineStyle: {
-              color: '#eee',
+              color: '#515151',
             },
             crossStyle: {
-              color: '#eee',
+              color: '#515151',
             }
           },
-          textStyle: {
-            color: '#2c2c2c'
-          },
+
         },
+        textStyle: {
+          color: '#2c2c2c',
+          fontFamily: ['Consolas', 'Menlo', 'Monaco', 'Courier New', 'PingFang SC',
+            'Microsoft YaHei', 'monospace'],
+        },
+        color: this.setColor(data0.values),
         grid: [
           {
-            left: "3%",
-            top: "0",
-            height: "80%"
+            left: "10px",
+            right: "50px",
+            top: "6px",
+            height: "75%"
+          },
+          {
+            left: "10px",
+            right: "50px",
+            top: "78%",
+            height: "12%"
           },
         ],
         xAxis: [
@@ -183,20 +215,58 @@ export default {
             data: data0.categoryData,
             scale: true,
             boundaryGap: true,
+            axisTick: {
+              show: false,
+            },
+            show: false,
             //坐标轴线
             axisLine: {
               onZero: false,
               show: false,
               lineStyle: {
-                color: "#f8f8f8"
+                color: "#2c2c2c"
               }
-            },
-            //刻度线
-            axisTick: {
-              show: false,
             },
             splitLine: {
               show: false,
+              lineStyle: {
+                type: 'solid',
+                color: '#d5d5d5',
+                width: 1,
+              },
+            },
+            splitNumber: 20,
+            axisPointer: {
+              label: {
+                show: false,
+              }
+            }
+          },
+          {
+            type: "category",
+            data: data0.categoryData,
+            scale: true,
+            boundaryGap: true,
+            gridIndex: 1,
+            axisTick: {
+              show: false,
+            },
+            show: true,
+            //坐标轴线
+            axisLine: {
+              onZero: false,
+              show: false,
+              lineStyle: {
+                color: "#2c2c2c"
+              }
+            },
+            splitLine: {
+              show: false,
+              lineStyle: {
+                type: 'solid',
+                color: '#d5d5d5',
+                width: 1,
+              },
             },
             splitNumber: 20,
             axisPointer: {
@@ -210,26 +280,51 @@ export default {
           {
             scale: true,
             splitArea: {
-              show: true,
+              show: false,
             },
             axisLine: {
               lineStyle: {
-                color: "#f8f8f8"
+                color: "#2c2c2c"
               }
             },
             axisPointer: {
               label: {
-                color: '#515151'
+                color: '#f5f5f5'
               }
             },
             splitLine: {
               show: true,
               lineStyle: {
-                type: 'dashed',
-                color: '#8c8c8c',
+                type: 'solid',
+                color: '#ddd',
                 width: 1,
+                opacity: 0.5,
               }
             },
+            position: "right"
+          },
+          {
+            boundaryGap: true,
+            splitLine: {
+              show: false,
+            },
+            scale: true,
+            min: value => {
+              return 1.5 * value.min - 0.5 * value.max;
+            },
+            splitArea: {
+              show: false,
+            },
+            axisLabel: {
+              show: false,
+              interval: '50',
+            },
+            axisPointer: {
+              label: {
+                color: '#f5f5f5'
+              }
+            },
+            gridIndex: 1,
             position: "right"
           },
         ],
@@ -237,23 +332,24 @@ export default {
           {
             type: "inside",
             start: 100,
-            end: 80
+            end: 50
           },
           {
             show: true,
             type: "slider",
-            y: "90%",
+            bottom: '10',
             start: 50,
             end: 100,
             textStyle: {
-              color: '#f8f8f8'
-            }
+              color: '#2c2c2c'
+            },
+            height: '3%',
           },
           {
             show: false,
             xAxisIndex: [0, 1],
             type: "slider",
-            start: 20,
+            start: 50,
             end: 100
           }
         ],
@@ -262,13 +358,7 @@ export default {
             name: "数据",
             type: "candlestick",
             data: data0.values,
-            markPoint: {
-              data: [
-                {
-                  name: "XX标点"
-                }
-              ],
-            },
+            markPoint: this.markPoint,
             markLine: {
               silent: true,
               data: [
@@ -276,6 +366,10 @@ export default {
                   yAxis: 999,
                 }
               ]
+            },
+            itemStyle: {
+              color0: '#6db',
+              borderColor0: '#6db',
             }
           },
           {
@@ -285,11 +379,12 @@ export default {
             smooth: true,
             lineStyle: {
               normal: {
-                opacity: 0.5
+                opacity: 1
               },
             },
             symbol: 'none',
-            color: '#aaa',
+            color: '#b77',
+            show: false,
           },
           {
             name: "MA10",
@@ -302,7 +397,7 @@ export default {
               }
             },
             symbol: 'none',
-            color: '#bbb',
+            color: '#e88',
           },
           {
             name: "MA20",
@@ -315,7 +410,7 @@ export default {
               }
             },
             symbol: 'none',
-            color: '#ccc',
+            color: '#e8e',
           },
           {
             name: "MA30",
@@ -328,12 +423,41 @@ export default {
               }
             },
             symbol: 'none',
-            color: '#ddd',
+            color: '#88e',
           },
+          {//成交量柱状图的设置
+            name: '成交量',
+            type: 'bar',
+            colorBy: 'data',
+            //barWidth: 30,//柱状图的宽度
+            xAxisIndex: 1,
+            yAxisIndex: 1,
+            data: data0.volume,
+          }
         ]
       };
     },
-    numToDate(arr) {
+    formatDate(item) {
+      let a = new Date(item.time);
+      return a.getFullYear() * 10000 + (a.getMonth() + 1) * 100 + a.getDate()
+    },
+    //t k s d g l
+    initData(arr) {
+      let newArray = [];
+      for (let item of arr) {
+        let tempArr = [];
+        tempArr.push(this.formatDate(item));
+        tempArr.push(item.open);
+        tempArr.push(item.close);
+        tempArr.push(item.low);
+        tempArr.push(item.high);
+        tempArr.push(item.volume);
+        newArray.push(tempArr);
+      }
+      this.data = newArray;
+      this.isDataInit = true;
+    },
+    numArrayToDate(arr) {
       for (let item of arr) {
         let s = item[0].toString();
         switch (s.length) {
@@ -343,6 +467,15 @@ export default {
         }
         item[0] = s;
       }
+    },
+    numToDate(num) {
+      let s = num.toString();
+      switch (s.length) {
+        case 8: s = s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8); break;
+        case 6: s = s.slice(0, 4) + '-' + s.slice(4, 6); break;
+        case 4:
+      }
+      return s;
     },
     filterToMonth(arr) {
       for (let item of arr) {
@@ -365,27 +498,81 @@ export default {
       temparr.push(tempitem);
       for (let item of temparr) {
         const newArray = item[0].map((col, i) => item.map(row => row[i]));
-        //console.log(newArray);
-        let element = [newArray[0][0]];
+        let element = [this.numToDate(newArray[0][0])];
         element.push(newArray[1][0]);
         element.push(newArray[2].at(-1));
         element.push(Math.min(...newArray[3]));
         element.push(Math.max(...newArray[4]));
+        element.push(newArray[5].reduce((total, value) => {
+          return total + value;
+        }))
         monthdata.push(element);
       }
       return monthdata
     },
     filterToWeek(arr) {
-
+      let idx = arr[0];
+      let day = new Date(this.numToDate(idx[0]));
+      if (day.getDay() != 1) {
+        day = new Date(day - (day.getDay() - 1) * 24 * 60 * 60 * 1000);
+      }
+      let temparr = [], tempitem = [], weekdata = [];
+      for (let item of arr) {
+        let tempDay = new Date(this.numToDate(item[0]));
+        let interval = parseInt((tempDay - day) / (24 * 60 * 60 * 1000));
+        if (interval < 7) {
+          tempitem.push(item);
+        }
+        else {
+          temparr.push(tempitem);
+          tempitem = [];
+          tempitem.push(item);
+          day = tempDay;
+          if (day.getDay() != 1) {
+            day = new Date(day - (day.getDay() - 1) * 24 * 60 * 60 * 1000);
+          }
+        }
+      }
+      temparr.push(tempitem);
+      for (let item of temparr) {
+        let newArray = item[0].map((col, i) => item.map(row => row[i]));
+        let element = []
+        element.push(this.numToDate(newArray[0][0]));
+        element.push(newArray[1][0]);
+        element.push(newArray[2].at(-1));
+        element.push(Math.min(...newArray[3]));
+        element.push(Math.max(...newArray[4]));
+        element.push(newArray[5].reduce((total, value) => {
+          return total + value;
+        }))
+        console.log(element)
+        weekdata.push(element);
+      }
+      console.log(weekdata[0], weekdata[0][1]);
+      return weekdata;
     },
-    filterToYear(arr) {
-
+    DayK() {
+      this.dayWeekMonthChosen = [1, 0, 0];
+      let temp = this.arrayCopy(this.data);
+      this.numArrayToDate(temp);
+      this.data0 = this.splitData(temp);
+      this.setOption(this.data0);
+      this.charts.setOption(this.option);
+    },
+    WeekK() {
+      this.dayWeekMonthChosen = [0, 1, 0];
+      let temp = this.arrayCopy(this.data);
+      temp = this.filterToWeek(temp);
+      //console.log(temp);
+      this.data0 = this.splitData(temp);
+      this.setOption(this.data0);
+      this.charts.setOption(this.option);
     },
     monthK() {
+      this.dayWeekMonthChosen = [0, 0, 1];
       let temp = this.arrayCopy(this.data);
       temp = this.filterToMonth(temp);
-      console.log(this.data[0]);
-      this.data0 = this.splitData(temp);      
+      this.data0 = this.splitData(temp);
       this.setOption(this.data0);
       this.charts.setOption(this.option);
     },
@@ -394,10 +581,81 @@ export default {
         return [...ary];
       });
       return copyArr;
+    },
+    numToDay(num) {
+      let d = new Date(this.numArrayToDate(num));
+      return d.getDay();
+    },
+    setColor(arr) {
+      let colorArray = [];
+      for (let item of arr) {
+        if (item[0] - item[1] < 0) {
+          colorArray.push('#c23531');
+        }
+        else colorArray.push('#6db');
+      }
+      return colorArray;
     }
   }
 };
 </script>
 
 <style scoped>
+.echartComponent {
+  font-family: Consolas, Menlo, Monaco, 'Courier New', 'PingFang SC',
+    'Microsoft YaHei', monospace;
+}
+
+#echartContainer {
+  width: auto;
+  flex: 1;
+  height: 425px;
+}
+
+.options {
+  display: flex;
+  width: 100%;
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+  margin-top: 10px;
+}
+
+.options button {
+  border: none;
+  background-color: transparent;
+  text-align: center;
+  font-size: 16px;
+  padding-right: 5px;
+  margin-bottom: 10px;
+  height: 30px;
+  width: 60px;
+  color: #8c8c8c;
+  font-family: Consolas, Menlo, Monaco, 'Courier New', 'PingFang SC',
+    'Microsoft YaHei', monospace;
+  text-align: center;
+}
+
+.options button:nth-child(4):after {
+  content: '|';
+  font-weight: 600;
+  color: #b77;
+}
+
+.options button:nth-child(5):after {
+  content: '|';
+  font-weight: 600;
+  color: #e88;
+}
+
+.options button:nth-child(6):after {
+  content: '|';
+  font-weight: 600;
+  color: #e8e;
+}
+
+.options button:nth-child(7):after {
+  content: '|';
+  font-weight: 600;
+  color: #88e;
+}
 </style>

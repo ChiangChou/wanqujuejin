@@ -1,12 +1,12 @@
 <template>
   <div class="task-item">
     <div class="task-item-name">
-      <img :src="collectImage" @click="collectChange" />
-      <span>{{ taskinfo.name }}</span>
+      <span style="font-weight: 600; width: 30px; font-size: 16px;margin: 0 15px;" :style="this.color">{{ idx }}</span>
+      <span style="font-weight: 600;">{{ taskinfo.name }}</span>
     </div>
     <div class="task-item-intro">
-      <span>{{ taskinfo.taskbrief }}</span>
-      <span>{{ taskinfo.place }}</span>
+      <span>{{ taskinfo.title }}</span>
+      <span style="margin-left: 30px;">{{ score }}</span>
     </div>
     <div class="task-item-time">
       <span>{{ taskinfo.time }}</span>
@@ -17,11 +17,22 @@
 <script>
 export default {
   name: "taskItem",
-  props: ["taskinfo"],
+  props: ["taskinfo", "idx"],
   computed: {
     collectImage() {
-      return this.taskinfo.isCollect ? require('../assets/collect_gold.svg') : require('../assets/collect_light.svg')
+      return this.taskinfo.pos_score > 0 ? require('../assets/hot1.svg') : require('../assets/warn1.svg')
     },
+    score(){
+      let score = this.taskinfo.pos_score > 0 ? this.taskinfo.pos_score: this.taskinfo.neg_score
+      let str = this.taskinfo.pos_score > 0 ? '乐观分数：': '悲观分数：'
+      score = str + Math.round(Math.abs(score)*20 - 10).toString()
+      return score;
+    },
+    color(){
+      if(this.idx <4) return {'color': 'red'};
+      else if(this.idx < 11 ) return {'color': '#AF6D77'};
+      else return {'color': '#2c2c2c'}
+    }
   },
   methods: {
     collectChange() {
@@ -38,7 +49,7 @@ export default {
 <style scoped>
 .task-item {
   width: 100%;
-  height: 36px;
+  height: 48px;
   display: flex;
   flex-shrink: 0;
   border-width: 0 0 1px 0;
@@ -49,11 +60,11 @@ export default {
 }
 
 .task-item:hover {
-  box-shadow: 0 1px 2px 0 #aaa;
+  box-shadow: 0 1px 2px 0 #2c2c2c;
 }
 
 .task-item-name {
-  width: 200px;
+  width: 150px;
   height: 100%;
   display: flex;
   align-items: center;

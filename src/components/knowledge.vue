@@ -71,43 +71,8 @@
                     </div>
                 </div>
                 <div class="mid">
-                    <div class="mid-item flex">
-                        <div class="mid-item-left">
-                            <div class="flex">
-                                <h3>市场走势{{ '/' + this.stockinfo[this.currentIndex].name }}</h3>
-                                <h4>{{ dateFormat(date) }}</h4>
-                                <h4 :style="risefallcolor">{{ toindex }}</h4>
-                            </div>
-                            <kline :newsinfo="this.newsinfo[this.currentIndex]"
-                                :stockinfo="this.stockData[this.stockinfo[this.currentIndex].fullId].price"></kline>
-                        </div>
-                        <div class="mid-item-right">
-                            <h3>情绪分布（行业）</h3>
-                            <distribution :names="this.industryName" :scores="this.industryScore"></distribution>
-                        </div>
-                    </div>
-                    <div class="mid-item mid-item-mid">
-
-                        <div class="item item-short">
-                            <h3>资讯统计</h3>
-                            <newsStatics :emotionScore="this.emotionScore[this.currentIndex]"></newsStatics>
-                        </div>
-
-                        <div class="item">
-                            <h3>财务指标（季报）</h3>
-                            <incomeTrend :stockSeasonIncome="this.incomeData[this.currentIndex]"></incomeTrend>
-                        </div>
-                        <div class="item item-short">
-                            <h3>情绪打分</h3>
-                            <div class="emotionrate">
-                                <emotionScore :emotionScore="this.emotionScore[this.currentIndex]"></emotionScore>
-                            </div>
-                        </div>
-                        <!--还需要一个预警线-->
-                        <div class="item" style="margin-right: 0;">
-                            <h3>情绪走势</h3>
-                            <trend></trend>
-                        </div>
+                    <div class="mid-item flex" style="width: calc(100vw - 252px)">
+                        <graph></graph>
                     </div>
                     <div class="mid-item" style="background-color: #fff; border: 1px solid RGBA(255, 255, 255, 0.1);">
                         <h3>市场资讯</h3>
@@ -133,6 +98,8 @@ import distribution from './emotionDistribution.vue'
 import incomeTrend from './incomeTrend.vue'
 import newsStatics from './newsStatics.vue'
 import search from './search.vue'
+import graph from './knowledgeGraph.vue'
+
 
 export default {
     name: "stock",
@@ -149,6 +116,7 @@ export default {
         incomeTrend: incomeTrend,
         newsStatics: newsStatics,
         search: search,
+        graph: graph,
     },
     methods: {
 
@@ -179,6 +147,7 @@ export default {
                 this.request(x.toString());
             }
         },
+
         request(type) {
             this.$http({
                 url: '/api/main/',
@@ -263,6 +232,23 @@ export default {
                 });
 
             this.$http({
+                url: '/api/knowledge/',
+                methods: 'get',
+            })
+                .then(res => {
+                    let temp = JSON.parse(res.data)
+                    temp.concept = JSON.parse(temp.concept)
+                    temp.rate = JSON.parse(temp.rate)
+                    temp.stocker = JSON.parse(temp.stocker)
+                    this.knowledgeInfo = temp;
+                    console.log(temp)
+                })
+                .catch(function (error) {
+                    // 请求失败处理
+                    console.log(error);
+                });
+
+            this.$http({
                 url: '/api/score/',
                 methods: 'get',
                 params: {
@@ -283,7 +269,6 @@ export default {
                 let temp //= Object.values(JSON.parse(temp2['600519.XSHG']))
                 let incomeData = [];
                 let i = 0;
-                console.log(Object.values(temp2).length)
                 for (let item of Object.values(temp2)) {
                     temp = Object.values(JSON.parse(item));
                     let temp1 = [];
@@ -316,7 +301,7 @@ export default {
                 for (let i = 0; i < temp2.length; i++) {
                     let temp = temp2[i]
                     temp = Object.values(JSON.parse(temp));
-                    console.log(temp)
+
                     let temp3 = Object.values(temp2)
                     let temp1 = []
                     for (let item of temp3) {
@@ -324,7 +309,7 @@ export default {
                     }
                     temp = temp[temp.length - 1];
                     let gm = temp.grossprofit_margin, nm = temp.netprofit_margin;
-                    gm = gm?gm:'无', nm = nm?nm:'无';
+                    gm = gm ? gm : '无', nm = nm ? nm : '无';
                     this.currentStockData[i].grossprofit_margin = gm;
                     this.currentStockData[i].netprofit_margin = nm;
                 }
@@ -347,14 +332,14 @@ export default {
                     let temp1 = JSON.parse(allInfo['res1']);
 
                     let i = 0;
-                    console.log(temp1.length)
+
                     for (let item of temp1) {
                         let temp = Object.values(JSON.parse(item));
-                        if(!temp[0]){
+                        if (!temp[0]) {
                             i++;
                             continue;
                         }
-                        console.log(temp)
+
                         temp = temp[temp.length - 1];
                         this.currentStockData[i].float_share = temp.float_share;
                         this.currentStockData[i].pb = temp.pb;
@@ -363,7 +348,6 @@ export default {
                         this.currentStockData[i].total_share = temp.total_share;
                         this.currentStockData[i++].circ_mv = temp.circ_mv / 10000;
                     }
-                    console.log(this.currentStockData)
                 })
                 .catch(function (error) {
                     // 请求失败处理
@@ -389,19 +373,19 @@ export default {
                 a = '+'.concat(a);
             return a;
         },
-        netprofit_margin(){
-           if(typeof(this.currentStockData[this.currentIndex].netprofit_margin) === 'string')
-           return this.currentStockData[this.currentIndex].netprofit_margin;
-           else if(typeof(this.currentStockData[this.currentIndex].netprofit_margin) === 'number')
-           return this.currentStockData[this.currentIndex].netprofit_margin.toFixed(2) + '%';
-           else return "未知"
+        netprofit_margin() {
+            if (typeof (this.currentStockData[this.currentIndex].netprofit_margin) === 'string')
+                return this.currentStockData[this.currentIndex].netprofit_margin;
+            else if (typeof (this.currentStockData[this.currentIndex].netprofit_margin) === 'number')
+                return this.currentStockData[this.currentIndex].netprofit_margin.toFixed(2) + '%';
+            else return "未知"
         },
-        grossprofit_margin(){
-            if(typeof(this.currentStockData[this.currentIndex].grossprofit_margin) === 'string')
-           return this.currentStockData[this.currentIndex].grossprofit_margin;
-           else if(typeof(this.currentStockData[this.currentIndex].grossprofit_margin) === 'number')
-           return this.currentStockData[this.currentIndex].grossprofit_margin.toFixed(2) + '%';
-           else return "未知"
+        grossprofit_margin() {
+            if (typeof (this.currentStockData[this.currentIndex].grossprofit_margin) === 'string')
+                return this.currentStockData[this.currentIndex].grossprofit_margin;
+            else if (typeof (this.currentStockData[this.currentIndex].grossprofit_margin) === 'number')
+                return this.currentStockData[this.currentIndex].grossprofit_margin.toFixed(2) + '%';
+            else return "未知"
         }
     },
     created() {
